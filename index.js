@@ -987,16 +987,50 @@ https://chat.whatsapp.com/KGtgYAU9Qv14v5iU0qBUbV
 
 
 
-        // fin fonctions utiles
-        /** ************* */
-        return zk;
-    }
-    let fichier = require.resolve(__filename);
-    fs.watchFile(fichier, () => {
-        fs.unwatchFile(fichier);
-        console.log(`mise à jour ${__filename}`);
-        delete require.cache[fichier];
-        require(fichier);
+        function serveIndexHtml(res) {
+    const filePath = path.join(__dirname, 'index.html');
+    fs.readFile(filePath, (err, data) => {
+        if (err) {
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Internal Server Error');
+        } else {
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(data);
+        }
     });
+}
+
+// Create an HTTP server
+const server = http.createServer((req, res) => {
+    if (req.url === '/') {
+        serveIndexHtml(res);
+    } else {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('Page Not Found');
+    }
+});
+
+// Start the server
+const PORT = 3000;
+server.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+// Watch the current file for changes
+let fichier = require.resolve(__filename);
+fs.watchFile(fichier, () => {
+    fs.unwatchFile(fichier);
+    console.log(`mise à jour ${__filename}`);
+    delete require.cache[fichier];
+    require(fichier);
+});
+
+// Main function
+function main() {
+    console.log('Application is running...');
+}
+
+// Delay execution
+setTimeout(() => {
     main();
 }, 5000);
